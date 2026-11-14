@@ -244,11 +244,12 @@ async function onModel(summary: Summary, solved?: Solved & { text: string; learn
   if (!was || !c) return
   const [now, parse] = await Promise.all([call('inspect', c.text, c.ref), call('parse', c.text, c.ref)])
   const l: Lesson = { text: c.text, title: parse.title, before: reading(was), after: reading(now), changed: summary.changed, parameters: summary.parameters }
-  if (changed(l)) publish(latest = l)
+  // the first such correction is kept, so further demos (brekkie, KTV) leave the figure on the one the script explains
+  if (changed(l) && !latest) publish(latest = l)
 }
 
 const FALLBACK = 'movie night tmrw 4p'
-/** The demo's last correction that changed a program. With none, the figure teaches one itself, so it can be shown on its own. */
+/** The demo's first correction that changed a program. With none, the figure teaches one itself, so it can be shown on its own. */
 function useLesson(beat: number): Lesson | undefined {
   const [lesson, setLesson] = useState(latest)
   const taught = useRef(false)
