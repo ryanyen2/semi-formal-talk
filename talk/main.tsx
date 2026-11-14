@@ -13,8 +13,10 @@ import './talk.css'
 import prices from './nvda.json'
 
 const meme = new URL('./meme.jpg', import.meta.url).href
+const video = new URL('./demo.mp4', import.meta.url).href
 
-const BEATS = ['blank', 'rise', 'trend', 'rule', 'drop', 'name', 'meme', 'question', 'quote', 'gene', 'renamed', 'rmv', 'demo', 'read', 'learn', 'end'] as const
+// Beats appear at once; only the rising line, the spreadsheet, the name card and the lesson move.
+const BEATS = ['blank', 'rise', 'trend', 'drop', 'name', 'meme', 'question', 'quote', 'gene', 'rmv', 'demo', 'video', 'read', 'learn'] as const
 type Beat = (typeof BEATS)[number]
 const at = (b: Beat) => BEATS.indexOf(b)
 const DEMO = at('demo')
@@ -53,16 +55,14 @@ function Talk() {
     <>
       <div className="talk" data-beat={name}>
         <Chart beat={beat} />
-        <Program beat={beat} />
-        <img className="meme" src={meme} alt="" data-on={name === 'meme' || undefined} />
-        <small className="credit" data-on={name === 'meme' || undefined}>圖：HADISY AI ACADEMY</small>
         <p className="question" data-on={name === 'question' || undefined}>為什麼他出軌，<span>綠</span>的是我們？</p>
         <blockquote className="quote" data-on={name === 'quote' || undefined}>
           <p>“It is invariably the case that a program, once in operation, will be felt to be only part of the answer to the problems at hand.”</p>
           <cite>Peter Naur, 1985</cite>
         </blockquote>
-        <Sheet beat={beat} />
+        <Sheet on={name === 'gene'} />
         <Ids on={name === 'rmv'} />
+        <Video on={name === 'video'} />
         <Architecture beat={beat} lesson={lesson} />
       </div>
       <div className="demo" data-on={beat === DEMO || undefined} inert={beat !== DEMO}>
@@ -78,17 +78,9 @@ const day = (d: string) => prices.findIndex(([q]) => q === d)
 const CUT = day('2026-10-06')
 const LAST = prices.length - 1
 const close = (i: number) => prices[i][1] as number
-// the straight line through the last 25 closes before the cut, carried on: what the rule expects
-const slope = (() => {
-  const from = CUT - 24, mx = from + 12, my = prices.slice(from, CUT + 1).reduce((s, [, p]) => s + (p as number), 0) / 25
-  let num = 0, den = 0
-  for (let i = from; i <= CUT; i++) { num += (i - mx) * (close(i) - my); den += (i - mx) ** 2 }
-  return num / den
-})()
-const EXPECT = close(CUT) + slope * (LAST - CUT)
-const LO = 148, HI = Math.max(262, EXPECT + 6)
+const LO = 148, HI = 262
 const X = (i: number) => 150 + (i / LAST) * 1300
-const Y = (p: number) => 600 - ((p - LO) / (HI - LO)) * 520 // the lower third is left for the rule
+const Y = (p: number) => 600 - ((p - LO) / (HI - LO)) * 520 // the lower third holds the name
 const line = (from: number, to: number) => prices.slice(from, to + 1).map(([, p], k) => `${k ? 'L' : 'M'}${X(from + k).toFixed(1)} ${Y(p as number).toFixed(1)}`).join('')
 const md = (d: string) => `${+d.slice(5, 7)}/${+d.slice(8)}`
 
@@ -102,7 +94,6 @@ function Chart({ beat }: { beat: number }) {
   const on = (b: Beat) => beat >= at(b)
   return (
     <svg className="chart" viewBox="0 0 1600 900" data-on={(on('rise') && !on('question')) || undefined}>
-      <line className="now" x1={X(CUT)} x2={X(CUT)} y1={60} y2={640} data-on={on('rule') || undefined} />
       <g className="ann" data-on={(on('trend') && !on('drop')) || undefined}>
         <g>
           <path className="span" d={`M${X(0)} 106V92H${X(CUT)}V106`} />
@@ -120,8 +111,7 @@ function Chart({ beat }: { beat: number }) {
         </g>
       </g>
       <path className="rise" d={line(0, CUT)} pathLength={1} data-on={on('rise') || undefined} />
-      <path className="guess" d={`M${X(CUT)} ${Y(close(CUT))}L${X(LAST)} ${Y(EXPECT)}`} data-on={on('rule') || undefined} data-past={on('drop') || undefined} />
-      <path className="fall" d={line(CUT, LAST)} pathLength={1} data-on={on('drop') || undefined} />
+      <path className="fall" d={line(CUT, LAST)} data-on={on('drop') || undefined} />
       <circle className="dot up" cx={X(CUT)} cy={Y(close(CUT))} r={9} data-on={(on('rise') && !on('drop')) || undefined} />
       <circle className="dot down" cx={X(LAST)} cy={Y(close(LAST))} r={9} data-on={on('drop') || undefined} />
       <g className="dates" data-on={on('name') || undefined}>
@@ -130,43 +120,31 @@ function Chart({ beat }: { beat: number }) {
         <text x={X(LAST)} y={Y(close(LAST)) + 52} textAnchor="middle">{md(prices[LAST][0] as string)}</text>
       </g>
       <text className="name" x={150} y={800} data-on={on('name') || undefined}>NVIDIA</text>
+      {/* the reason, beside the day it began: right edge just left of 10/6, top at its label */}
+      <g className="reason" data-on={BEATS[beat] === 'meme' || undefined}>
+        <image href={meme} x={X(CUT) - 44 - 597} y={118} width={597} height={740} preserveAspectRatio="xMaxYMin meet" />
+        <text x={X(CUT) - 44} y={884} textAnchor="end">圖：HADISY AI ACADEMY</text>
+      </g>
     </svg>
-  )
-}
-
-/* ---------- The rule as a program: under the chart, and at the end with one line left informal ---------- */
-
-function Program({ beat }: { beat: number }) {
-  const name = BEATS[beat], end = name === 'end'
-  return (
-    <div className="prog" data-at={beat > at('drop') ? 'center' : 'chart'} data-on={(beat >= at('rule') && beat <= at('drop')) || end || undefined} data-faint={name === 'drop' || undefined}>
-      <div className="ln"><i>if</i><span>財報好</span><b>✓</b></div>
-      <div className="ln"><i>and</i><span>產品強</span><b>✓</b></div>
-      <div className="ln"><i>and</i><span>市場熱</span><b>✓</b></div>
-      <div className="ln extra" data-on={end || undefined}><i>and</i><span className="said">「公司沒出大事」</span><b /></div>
-      <div className="ln act"><i /><span>買進()</span></div>
-    </div>
   )
 }
 
 /* ---------- Two readings decided before use: gene names in a spreadsheet, a name at the RMV ---------- */
 
-// Excel reads these symbols as dates; in 2020 the HGNC renamed the genes instead
-const GENES = [['MARCH1', '1-Mar', 'MARCHF1'], ['SEPT1', '1-Sep', 'SEPTIN1'], ['SEPT2', '2-Sep', 'SEPTIN2']]
+// Excel sees a month and a day in these gene symbols and stores dates (the HGNC renamed the genes in 2020)
+const GENES = [['MARCH', '1', '1-Mar'], ['SEPT', '1', '1-Sep'], ['SEPT', '2', '2-Sep']]
 
-function Sheet({ beat }: { beat: number }) {
-  const name = BEATS[beat]
-  // the state outlives the beat, so the cells hold still while the sheet fades out going forward
-  const state = beat < at('gene') ? 'typed' : beat === at('gene') ? 'gene' : 'renamed'
+/** The symbols as typed, the month and day the spreadsheet finds in them, then the dates it keeps. */
+function Sheet({ on }: { on: boolean }) {
   return (
-    <table className="sheet" data-on={name === 'gene' || name === 'renamed' || undefined} data-state={state}>
+    <table className="sheet" data-on={on || undefined}>
       <thead><tr><th /><th>A</th></tr></thead>
       <tbody>
         <tr><th>1</th><td><span>gene</span></td></tr>
-        {GENES.map(([typed, date, now], i) => (
-          <tr key={typed} style={{ '--i': i } as CSSProperties}>
+        {GENES.map(([month, d, date], i) => (
+          <tr key={i} style={{ '--i': i } as CSSProperties}>
             <th>{i + 2}</th>
-            <td><span className="typed">{typed}</span><span className="date">{date}</span><span className="now"><del>{typed}</del><ins>{now}</ins></span></td>
+            <td><span className="typed"><b>{month}</b><b>{d}</b></span><span className="date">{date}</span></td>
           </tr>
         ))}
       </tbody>
@@ -182,6 +160,17 @@ function Ids({ on }: { on: boolean }) {
       <div className="id"><small>RMV</small><i /><div><span>First name</span><b>HEN<s>-CHEN</s></b></div></div>
     </div>
   )
+}
+
+/** The recorded demo, for when the live one fails: plays muted from the start on its beat; a click pauses. */
+function Video({ on }: { on: boolean }) {
+  const ref = useRef<HTMLVideoElement>(null)
+  useEffect(() => {
+    const v = ref.current!
+    if (on) { v.currentTime = 0; v.play().catch(() => {}) } else v.pause()
+  }, [on])
+  return <video ref={ref} className="video" src={video} muted playsInline preload="auto" data-on={on || undefined}
+    onClick={e => { const v = e.currentTarget; if (v.paused) v.play().catch(() => {}); else v.pause() }} />
 }
 
 /* ---------- After the demo: the sentence, the weights, the program they give, and where it puts the event ---------- */
