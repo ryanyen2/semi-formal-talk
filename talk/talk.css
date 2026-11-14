@@ -21,15 +21,9 @@ html, body { background: #000; overflow: hidden; }
 @keyframes show { from { visibility: hidden; } }
 .chart circle.up { fill: var(--up); }
 .chart circle.down { fill: var(--down); }
-/* what a chart reader points at */
-.ann text { font: 500 30px var(--sans); fill: var(--ink); }
 .chart text.when { font: 500 26px var(--sans); fill: var(--ink-3); font-variant-numeric: tabular-nums; }
-.ann text.when { font-size: 26px; fill: var(--ink-3); font-variant-numeric: tabular-nums; }
 .chart text.total { font: 500 30px var(--sans); fill: var(--ink-3); font-variant-numeric: tabular-nums; }
 .chart text.total tspan { fill: var(--down); font-weight: 600; }
-.ann path { stroke: var(--ink-3); stroke-width: 2.5; stroke-dasharray: 8 9; }
-.ann path.span { stroke-dasharray: none; }
-.ann circle { fill: #000; stroke: var(--ink); stroke-width: 3; }
 .name { font: 700 120px var(--sans); letter-spacing: -0.03em; fill: var(--ink); }
 .reason text { font: 18px var(--sans); fill: var(--ink-3); }
 

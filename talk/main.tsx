@@ -18,7 +18,7 @@ const video = new URL('./demo.mp4', import.meta.url).href
 const report = new URL('./report.png', import.meta.url).href
 
 // 'gene' and 'rmv' (Sheet and Ids below) are out of the talk for now; put them back in this list to show them.
-const BEATS = ['blank', 'rise', 'trend', 'drop1', 'why1', 'drop2', 'name', 'meme', 'question', 'ran', 'quote', 'semi', 'pasted', 'demo', 'video', 'read', 'learn'] as const
+const BEATS = ['blank', 'rise', 'drop1', 'drop2', 'name', 'meme', 'question', 'ran', 'quote', 'semi', 'pasted', 'demo', 'video', 'read', 'learn'] as const
 type Beat = (typeof BEATS)[number]
 const at = (b: Beat) => BEATS.indexOf(b)
 const DEMO = at('demo')
@@ -81,42 +81,25 @@ function Talk() {
 /* ---------- The stock: real closes (Yahoo Finance), one chart from mid-July to 11/13 ---------- */
 
 const day = (d: string) => prices.findIndex(([q]) => q === d)
-const START = day('2026-07-16') // the window opens before the first of the rising lows
+const START = day('2026-07-16') // the window opens before the first of the rising lows (7/29, 8/24, 9/14)
 const CUT = day('2026-10-06') // the highest close
-const D1 = day('2026-11-06') // the last close before Huang's email of 11/8
+const D1 = day('2026-11-03') // the rebound after 10/30, where the first fall stops
 const LAST = prices.length - 1
 const close = (i: number) => prices[i][1] as number
 const pct = (a: number, b: number) => Math.round((close(b) / close(a) - 1) * 100)
 const signed = (n: number) => `${n > 0 ? '+' : n < 0 ? '−' : ''}${Math.abs(n)}%`
 const date = (i: number) => { const d = prices[i][0] as string; return `${+d.slice(5, 7)}/${+d.slice(8)}` }
 
-// the days to the right of 10/6 are empty until they happen; the lower third holds the labels and the name
+// the days to the right of 10/6 are empty until they happen; the lower third holds the name
 const X = (i: number) => 150 + ((i - START) / (LAST - START)) * 1300
 const Y = (p: number) => 600 - ((p - 155) / 90) * 520
 const line = (a: number, b: number) => prices.slice(a, b + 1).map(([, p], k) => `${k ? 'L' : 'M'}${X(a + k).toFixed(1)} ${Y(p as number).toFixed(1)}`).join('')
-
-// What a chart reader would point at on 10/6. All from the closes in nvda.json:
-const LOWS = ['2026-07-29', '2026-08-24', '2026-09-14'].map(day) // each dip ended higher: 190.01, 208.48, 210.96
-const support = (i: number) => close(LOWS[0]) + ((close(LOWS[2]) - close(LOWS[0])) / (LOWS[2] - LOWS[0])) * (i - LOWS[0])
-const HIGH = day('2026-09-04') // 230.36, the last high before; closed above it from 10/1
-
-// The largest falls before 11/8, with what the news tied them to: the whole chip sector, not Nvidia alone.
-// 10/22 AI spending and borrowing costs; 10/30 Intel's Q4 guidance (Intel −29%); 11/5 chip stocks (Nasdaq −5.5%, AMD and Micron −17%).
-const FALLS: [number, string][] = [[day('2026-10-22'), 'AI 泡沫疑慮'], [day('2026-10-30'), 'Intel 財測差']]
 
 function Chart({ beat }: { beat: number }) {
   const name = BEATS[beat], on = (b: Beat) => beat >= at(b)
   const shown = on('rise') && !on('question')
   return (
     <svg className="chart" viewBox="0 0 1600 900" data-on={shown || undefined}>
-      {name === 'trend' && <g className="ann">
-        <path d={`M${X(LOWS[0] - 4)} ${Y(support(LOWS[0] - 4))}L${X(CUT)} ${Y(support(CUT))}`} />
-        {LOWS.map(i => <circle key={i} cx={X(i)} cy={Y(close(i))} r={8} />)}
-        <text x={X(LOWS[1])} y={Y(support(LOWS[1])) + 78} textAnchor="middle">低點越來越高</text>
-        <path d={`M${X(HIGH)} ${Y(close(HIGH))}H${X(CUT)}`} />
-        <circle cx={X(HIGH)} cy={Y(close(HIGH))} r={8} />
-        <text x={X(CUT) - 30} y={Y(close(HIGH)) - 24} textAnchor="end">突破前高</text>
-      </g>}
       <path className="rise" d={line(START, CUT)} />
       {!on('drop1') && <circle className="up" cx={X(CUT)} cy={Y(close(CUT))} r={9} />}
       {/* the two falls draw themselves; everything else is there at once */}
@@ -124,19 +107,10 @@ function Chart({ beat }: { beat: number }) {
         <path className="fall" d={line(CUT, D1)} pathLength={1} />
         <text className="when" x={X(CUT)} y={Y(close(CUT)) - 28} textAnchor="middle">{date(CUT)}</text>
       </>}
-      {shown && on('drop1') && !on('drop2') && <circle className="down late" cx={X(D1)} cy={Y(close(D1))} r={9} />}
-      {on('why1') && <g className="ann">
-        {FALLS.map(([i, why], k) => {
-          const lx = X(FALLS[FALLS.length - 1][0]) - (FALLS.length - 1 - k) * 190 // a row of labels ending under the last fall
-          return <g key={i}>
-            <path d={`M${lx} 616L${X(i)} ${Y(close(i)) + 16}`} />
-            <circle cx={X(i)} cy={Y(close(i))} r={8} />
-            <text x={lx} y={652} textAnchor="middle" className="when">{date(i)} {signed(pct(i - 1, i))}</text>
-            <text x={lx} y={692} textAnchor="middle">{why}</text>
-          </g>
-        })}
-        <text x={X(D1) + 20} y={Y(close(D1)) - 20} className="total">{date(D1)} <tspan>{signed(pct(CUT, D1))}</tspan></text>
-      </g>}
+      {shown && on('drop1') && !on('drop2') && <>
+        <circle className="down late" cx={X(D1)} cy={Y(close(D1))} r={9} />
+        <text x={X(D1) + 20} y={Y(close(D1)) - 20} className="total late">{date(D1)} <tspan>{signed(pct(CUT, D1))}</tspan></text>
+      </>}
       {shown && on('drop2') && <>
         <path className="fall" d={line(D1, LAST)} pathLength={1} />
         <circle className="down late" cx={X(LAST)} cy={Y(close(LAST))} r={9} />
