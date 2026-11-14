@@ -81,13 +81,13 @@ html, body { background: #fff; overflow: hidden; }
 .sheet td > span { position: absolute; inset: 0 0.45em; display: flex; align-items: center; gap: 0.4em; white-space: nowrap; }
 .sheet .date { justify-content: flex-end; font-variant-numeric: tabular-nums; }
 .sheet .date, .sheet .now { opacity: 0; }
-.sheet[data-on='gene'] .typed { opacity: 0; transition: opacity 120ms calc(1300ms + var(--i) * 350ms); }
-.sheet[data-on='gene'] .date { opacity: 1; transition: opacity 120ms calc(1300ms + var(--i) * 350ms); }
-.sheet[data-on='renamed'] .typed { opacity: 0; }
-.sheet[data-on='renamed'] .now { opacity: 1; }
+.sheet[data-state='gene'] .typed { opacity: 0; transition: opacity 120ms calc(1300ms + var(--i) * 350ms); }
+.sheet[data-state='gene'] .date { opacity: 1; transition: opacity 120ms calc(1300ms + var(--i) * 350ms); }
+.sheet[data-state='renamed'] .typed { opacity: 0; }
+.sheet[data-state='renamed'] .now { opacity: 1; }
 .sheet del { color: var(--ink-3); text-decoration-thickness: 0.07em; }
 .sheet ins { text-decoration: none; font-weight: 600; }
-.sheet[data-on='renamed'] ins { animation: arrive 500ms var(--ease) calc(500ms + var(--i) * 250ms) both; }
+.sheet[data-state='renamed'] ins { animation: arrive 500ms var(--ease) calc(500ms + var(--i) * 250ms) both; }
 
 /* a name on two cards, and the part one of them dropped */
 .ids { left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 3.5cqw; font-size: 1.5cqw; }

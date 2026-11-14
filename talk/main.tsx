@@ -156,8 +156,10 @@ const GENES = [['MARCH1', '1-Mar', 'MARCHF1'], ['SEPT1', '1-Sep', 'SEPTIN1'], ['
 
 function Sheet({ beat }: { beat: number }) {
   const name = BEATS[beat]
+  // the state outlives the beat, so the cells hold still while the sheet fades out going forward
+  const state = beat < at('gene') ? 'typed' : beat === at('gene') ? 'gene' : 'renamed'
   return (
-    <table className="sheet" data-on={name === 'gene' || name === 'renamed' ? name : undefined}>
+    <table className="sheet" data-on={name === 'gene' || name === 'renamed' || undefined} data-state={state}>
       <thead><tr><th /><th>A</th></tr></thead>
       <tbody>
         <tr><th>1</th><td><span>gene</span></td></tr>
