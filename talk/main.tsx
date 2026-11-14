@@ -1,6 +1,7 @@
-// The talk (docs/design.md section 13): one white stage, moved on by key, with the calendar inside it.
+// The talk (docs/design.md section 13): one black stage, moved on by key, with the calendar inside it.
 // → / Space / PageDown: next. ← / PageUp: back. In the calendar's sentence the arrows move the caret once
 // there is text and Space types; Esc leaves the sentence. #n in the address is the beat, and can be typed.
+// Nothing fades or moves between beats; each one is drawn as it is.
 import { type CSSProperties, useEffect, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App, REF } from '../src/App.tsx'
@@ -15,8 +16,8 @@ import prices from './nvda.json'
 const meme = new URL('./meme.jpg', import.meta.url).href
 const video = new URL('./demo.mp4', import.meta.url).href
 
-// Beats appear at once; only the rising line, the spreadsheet, the name card and the lesson move.
-const BEATS = ['blank', 'rise', 'trend', 'drop', 'name', 'meme', 'question', 'quote', 'gene', 'rmv', 'demo', 'video', 'read', 'learn'] as const
+// 'gene' and 'rmv' (Sheet and Ids below) are out of the talk for now; put them back in this list to show them.
+const BEATS = ['blank', 'rise', 'trend', 'drop1', 'name', 'why1', 'drop2', 'meme', 'question', 'ran', 'quote', 'informal', 'news', 'demo', 'video', 'read', 'learn'] as const
 type Beat = (typeof BEATS)[number]
 const at = (b: Beat) => BEATS.indexOf(b)
 const DEMO = at('demo')
@@ -56,12 +57,11 @@ function Talk() {
       <div className="talk" data-beat={name}>
         <Chart beat={beat} />
         <p className="question" data-on={name === 'question' || undefined}>為什麼他出軌，<span>綠</span>的是我們？</p>
+        <Program name={name} />
         <blockquote className="quote" data-on={name === 'quote' || undefined}>
           <p>“It is invariably the case that a program, once in operation, will be felt to be only part of the answer to the problems at hand.”</p>
           <cite>Peter Naur, 1985</cite>
         </blockquote>
-        <Sheet on={name === 'gene'} />
-        <Ids on={name === 'rmv'} />
         <Video on={name === 'video'} />
         <Architecture beat={beat} lesson={lesson} />
       </div>
@@ -72,64 +72,108 @@ function Talk() {
   )
 }
 
-/* ---------- The stock: real closes, 2026-03-27 to 2026-11-13 (Yahoo Finance), cut where it peaked ---------- */
+/* ---------- The stock: real closes, 2026-03-27 to 2026-11-13 (Yahoo Finance) ---------- */
 
 const day = (d: string) => prices.findIndex(([q]) => q === d)
-const CUT = day('2026-10-06')
+const CUT = day('2026-10-06') // the highest close, where the rule says buy
+const D1 = day('2026-11-06') // the last close before Huang's email of 11/8
 const LAST = prices.length - 1
 const close = (i: number) => prices[i][1] as number
-const LO = 148, HI = 262
-const X = (i: number) => 150 + (i / LAST) * 1300
-const Y = (p: number) => 600 - ((p - LO) / (HI - LO)) * 520 // the lower third holds the name
-const line = (from: number, to: number) => prices.slice(from, to + 1).map(([, p], k) => `${k ? 'L' : 'M'}${X(from + k).toFixed(1)} ${Y(p as number).toFixed(1)}`).join('')
+const pct = (a: number, b: number) => Math.round((close(b) / close(a) - 1) * 100)
+const signed = (n: number) => `${n > 0 ? '+' : n < 0 ? '−' : ''}${Math.abs(n)}%`
 const md = (d: string) => `${+d.slice(5, 7)}/${+d.slice(8)}`
+const date = (i: number) => md(prices[i][0] as string)
+
+/** Index and price to the 1600×900 stage, for a range of days and of prices. */
+function axes(from: number, to: number, lo: number, hi: number) {
+  const X = (i: number) => 150 + ((i - from) / (to - from)) * 1300
+  const Y = (p: number) => 600 - ((p - lo) / (hi - lo)) * 520
+  const line = (a: number, b: number) => prices.slice(a, b + 1).map(([, p], k) => `${k ? 'L' : 'M'}${X(a + k).toFixed(1)} ${Y(p as number).toFixed(1)}`).join('')
+  return { X, Y, line }
+}
+const WIDE = axes(0, LAST, 148, 262) // the whole window; the lower third holds the name
+const NEAR = axes(CUT - 4, LAST, 150, 250) // the five weeks after the peak, wide enough to point at single days
 
 // What a chart reader would point at on 10/6. All from the closes in nvda.json:
-const GAIN = Math.round((close(CUT) / close(0) - 1) * 100) // +43% since 3/27
+const GAIN = pct(0, CUT) // +43% since 3/27
 const LOWS = ['2026-07-29', '2026-08-24', '2026-09-14'].map(day) // each dip ended higher: 190.01, 208.48, 210.96
 const support = (i: number) => close(LOWS[0]) + ((close(LOWS[2]) - close(LOWS[0])) / (LOWS[2] - LOWS[0])) * (i - LOWS[0])
 const PEAK = day('2026-05-14') // 235.74, the highest close before October; closed above on 10/5 and 10/6
 
+// The largest falls before 11/8, with what the news tied them to: the whole chip sector, not Nvidia alone.
+// 10/22 AI spending and borrowing costs; 10/30 Intel's Q4 guidance (Intel −29%); 11/5 chip stocks (Nasdaq −5.5%, AMD and Micron −17%).
+const FALLS: [number, string][] = [[day('2026-10-22'), 'AI 支出疑慮'], [day('2026-10-30'), 'Intel 財測'], [day('2026-11-05'), '晶片股崩跌']]
+
 function Chart({ beat }: { beat: number }) {
-  const on = (b: Beat) => beat >= at(b)
+  const name = BEATS[beat], on = (b: Beat) => beat >= at(b)
+  const wide = beat <= at('name'), { X, Y, line } = wide ? WIDE : NEAR
+  const email = (X(D1) + X(D1 + 1)) / 2 // 11/8 was a Sunday, between the closes of 11/6 and 11/9
   return (
     <svg className="chart" viewBox="0 0 1600 900" data-on={(on('rise') && !on('question')) || undefined}>
-      <g className="ann" data-on={(on('trend') && !on('drop')) || undefined}>
-        <g>
-          <path className="span" d={`M${X(0)} 106V92H${X(CUT)}V106`} />
-          <text x={(X(0) + X(CUT)) / 2} y={72} textAnchor="middle">半年 +{GAIN}%</text>
-        </g>
-        <g>
-          <path d={`M${X(LOWS[0] - 4)} ${Y(support(LOWS[0] - 4))}L${X(CUT)} ${Y(support(CUT))}`} />
-          {LOWS.map(i => <circle key={i} cx={X(i)} cy={Y(close(i))} r={8} />)}
-          <text x={X(LOWS[1])} y={Y(support(LOWS[1])) + 78} textAnchor="middle">低點越來越高</text>
-        </g>
-        <g>
-          <path d={`M${X(PEAK)} ${Y(close(PEAK))}H${X(CUT)}`} />
-          <circle cx={X(PEAK)} cy={Y(close(PEAK))} r={8} />
-          <text x={X(CUT) - 30} y={Y(close(PEAK)) - 24} textAnchor="end">突破前高</text>
-        </g>
-      </g>
-      <path className="rise" d={line(0, CUT)} pathLength={1} data-on={on('rise') || undefined} />
-      <path className="fall" d={line(CUT, LAST)} data-on={on('drop') || undefined} />
-      <circle className="dot up" cx={X(CUT)} cy={Y(close(CUT))} r={9} data-on={(on('rise') && !on('drop')) || undefined} />
-      <circle className="dot down" cx={X(LAST)} cy={Y(close(LAST))} r={9} data-on={on('drop') || undefined} />
-      <g className="dates" data-on={on('name') || undefined}>
-        <text x={X(0)} y={Y(close(0)) + 52} textAnchor="middle">2026/{md(prices[0][0] as string)}</text>
-        <text x={X(CUT)} y={Y(close(CUT)) - 30} textAnchor="middle">{md(prices[CUT][0] as string)}</text>
-        <text x={X(LAST)} y={Y(close(LAST)) + 52} textAnchor="middle">{md(prices[LAST][0] as string)}</text>
-      </g>
-      <text className="name" x={150} y={800} data-on={on('name') || undefined}>NVIDIA</text>
-      {/* the reason, beside the day it began: right edge just left of 10/6, top at its label */}
-      <g className="reason" data-on={BEATS[beat] === 'meme' || undefined}>
-        <image href={meme} x={X(CUT) - 44 - 597} y={118} width={597} height={740} preserveAspectRatio="xMaxYMin meet" />
-        <text x={X(CUT) - 44} y={884} textAnchor="end">圖：HADISY AI ACADEMY</text>
-      </g>
+      {name === 'trend' && <g className="ann">
+        <path className="span" d={`M${X(0)} 106V92H${X(CUT)}V106`} />
+        <text x={(X(0) + X(CUT)) / 2} y={72} textAnchor="middle">半年 {signed(GAIN)}</text>
+        <path d={`M${X(LOWS[0] - 4)} ${Y(support(LOWS[0] - 4))}L${X(CUT)} ${Y(support(CUT))}`} />
+        {LOWS.map(i => <circle key={i} cx={X(i)} cy={Y(close(i))} r={8} />)}
+        <text x={X(LOWS[1])} y={Y(support(LOWS[1])) + 78} textAnchor="middle">低點越來越高</text>
+        <path d={`M${X(PEAK)} ${Y(close(PEAK))}H${X(CUT)}`} />
+        <circle cx={X(PEAK)} cy={Y(close(PEAK))} r={8} />
+        <text x={X(CUT) - 30} y={Y(close(PEAK)) - 24} textAnchor="end">突破前高</text>
+      </g>}
+      <path className="rise" d={line(wide ? 0 : CUT - 4, CUT)} />
+      {on('drop1') && <path className="fall" d={line(CUT, D1)} />}
+      {on('drop2') && <path className="fall" d={line(D1, LAST)} />}
+      {!on('drop1') && <circle className="up" cx={X(CUT)} cy={Y(close(CUT))} r={9} />}
+      {on('drop1') && !on('drop2') && <circle className="down" cx={X(D1)} cy={Y(close(D1))} r={9} />}
+      {on('drop2') && <circle className="down" cx={X(LAST)} cy={Y(close(LAST))} r={9} />}
+      {on('name') && <g className="dates">
+        {wide && <text x={X(0)} y={Y(close(0)) + 52} textAnchor="middle">2026/{date(0)}</text>}
+        <text x={X(CUT)} y={Y(close(CUT)) - 30} textAnchor="middle">{date(CUT)}</text>
+        {wide && <text x={X(D1)} y={Y(close(D1)) + 52} textAnchor="middle">{date(D1)}</text>}
+      </g>}
+      {wide && on('name') && <text className="name" x={150} y={800}>NVIDIA</text>}
+      {name === 'why1' && <g className="ann">
+        {FALLS.map(([i, why]) => <g key={i}>
+          <path d={`M${X(i)} ${Y(close(i)) + 18}V628`} />
+          <circle cx={X(i)} cy={Y(close(i))} r={8} />
+          <text x={X(i)} y={664} textAnchor="middle" className="when">{date(i)} {signed(pct(i - 1, i))}</text>
+          <text x={X(i)} y={704} textAnchor="middle">{why}</text>
+        </g>)}
+        <text x={X(D1) + 24} y={Y(close(D1)) - 18} className="total">{date(D1)} <tspan>{signed(pct(CUT, D1))}</tspan></text>
+      </g>}
+      {on('drop2') && <g className="ann">
+        <path d={`M${email} 96V600`} />
+        <text x={email} y={80} textAnchor="middle" className="when">11/8</text>
+        <text x={X(LAST)} y={Y(close(LAST)) + 52} textAnchor="middle" className="total">{date(LAST)} <tspan>{signed(pct(D1, LAST))}</tspan></text>
+      </g>}
+      {/* the reason for the second fall, beside the day it began: right edge just left of 11/8, top below its label */}
+      {name === 'meme' && <g className="reason">
+        <image href={meme} x={email - 40 - 597} y={118} width={597} height={740} preserveAspectRatio="xMaxYMin meet" />
+        <text x={email - 40} y={884} textAnchor="end">圖：HADISY AI ACADEMY</text>
+      </g>}
     </svg>
   )
 }
 
-/* ---------- Two readings decided before use: gene names in a spreadsheet, a name at the RMV ---------- */
+/* ---------- The rule as a program: run, then one line left informal, then that line written from the news ---------- */
+
+function Program({ name }: { name: Beat }) {
+  const shown = name === 'ran' || name === 'informal' || name === 'news'
+  return (
+    <div className="prog" data-on={shown || undefined}>
+      {name === 'news' && <p className="news"><em>11/8</em>執行長承認外遇</p>}
+      {/* each mark sits right after its line, so a longer fourth line moves nothing above it */}
+      <div className="ln"><i>if</i><span>財報好<b>✓</b></span></div>
+      <div className="ln"><i>and</i><span>產品強<b>✓</b></span></div>
+      <div className="ln"><i>and</i><span>市場熱<b>✓</b></span></div>
+      {name === 'informal' && <div className="ln"><i>and</i><span className="said">「公司沒出大事」</span></div>}
+      {name === 'news' && <div className="ln"><i>and</i><span><code>not 醜聞(執行長)</code><b className="no">✗</b><small>「公司沒出大事」</small></span></div>}
+      <div className="ln act" data-off={name === 'news' || undefined}><i /><span><s>買進()</s>{name === 'ran' && <em>{signed(pct(CUT, LAST))}</em>}</span></div>
+    </div>
+  )
+}
+
+/* ---------- Two readings decided before use, out of the talk for now: gene names in a spreadsheet, a name at the RMV ---------- */
 
 // Excel sees a month and a day in these gene symbols and stores dates (the HGNC renamed the genes in 2020)
 const GENES = [['MARCH', '1', '1-Mar'], ['SEPT', '1', '1-Sep'], ['SEPT', '2', '2-Sep']]
@@ -261,8 +305,8 @@ function Architecture({ beat, lesson }: { beat: number; lesson?: Lesson }) {
       {/* back from the place to the program that gives it, and from that program to the weights; x in tenths of a percent of the row (talk.css columns) */}
       <svg className="a-back" viewBox="0 0 920 100">
         <defs><marker id="head" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" /></marker></defs>
-        <path d="M791 4 C791 70, 560 76, 520 14" pathLength={1} markerEnd="url(#head)" />
-        <path d="M440 14 C410 76, 300 70, 271 6" pathLength={1} markerEnd="url(#head)" />
+        <path d="M791 4 C791 70, 560 76, 520 14" markerEnd="url(#head)" />
+        <path d="M440 14 C410 76, 300 70, 271 6" markerEnd="url(#head)" />
       </svg>
     </div>
   )

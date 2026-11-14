@@ -1,32 +1,31 @@
-/* The talk: a white 16:9 stage; sizes are in hundredths of its width (cqw), so it fits any screen.
-   Beats appear at once, with no fade; only the rising line, the spreadsheet, the name card and the lesson move. */
-:root { --up: #e0454f; --down: #17a06b; } /* Taiwan's colours: red up, green down */
-html, body { background: #fff; overflow: hidden; }
+/* The talk: a black 16:9 stage; sizes are in hundredths of its width (cqw), so it fits any screen.
+   Nothing fades or moves: a beat is shown as it is, or not at all. The calendar (.demo) keeps its own white. */
+:root { --up: #ff4d5a; --down: #20c47f; } /* Taiwan's colours: red up, green down */
+html, body { background: #000; overflow: hidden; }
 
-.talk { position: fixed; inset: 0; margin: auto; width: min(100vw, 100vh * 16 / 9); height: min(100vh, 100vw * 9 / 16); container-type: size; user-select: none; }
+.talk { position: fixed; inset: 0; margin: auto; width: min(100vw, 100vh * 16 / 9); height: min(100vh, 100vw * 9 / 16); container-type: size; user-select: none;
+  --ink: #f5f5f7; --ink-2: #c7c7cc; --ink-3: #8e8e93; --line: #3a3a3c; --line-2: #26262a; --paper: #161618;
+  --pink: #ff6b98; --pink-2: #9c3a5c; --pink-wash: #3a1726; --pink-ink: #ff9cba;
+  color: var(--ink); background: #000; }
 .talk > * { position: absolute; visibility: hidden; }
 .talk > [data-on] { visibility: visible; }
-@keyframes arrive { from { opacity: 0; transform: translateY(0.25em); } }
 
 /* the price */
 .chart { inset: 0; width: 100%; height: 100%; overflow: visible; }
 .chart path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
 .rise, .fall { stroke-width: 4.5; }
-.rise { stroke: var(--up); stroke-dasharray: 1 1; stroke-dashoffset: 1; transition: stroke-dashoffset 2400ms var(--ease-in-out); }
-.rise[data-on] { stroke-dashoffset: 0; }
+.rise { stroke: var(--up); }
 .fall { stroke: var(--down); }
-.fall, .dot, .ann, .dates, .name, .reason { opacity: 0; }
-.fall[data-on], .dot[data-on], .ann[data-on], .dates[data-on], .name[data-on], .reason[data-on] { opacity: 1; }
-.dot { transform-box: fill-box; transform-origin: center; }
-.dot.up { fill: var(--up); }
-.dot.down { fill: var(--down); }
-.dot.up[data-on] { transition: opacity 300ms 2300ms; animation: pulse 1.4s ease-in-out 2.6s infinite; } /* once the line has drawn */
-@keyframes pulse { 50% { transform: scale(1.45); } }
-/* what a chart reader points at: the span, the rising lows, the old high broken */
-.ann text { font: 500 30px var(--sans); fill: var(--ink-2); }
+.chart circle.up { fill: var(--up); }
+.chart circle.down { fill: var(--down); }
+/* what a chart reader points at */
+.ann text { font: 500 30px var(--sans); fill: var(--ink); }
+.ann text.when { font-size: 26px; fill: var(--ink-3); font-variant-numeric: tabular-nums; }
+.ann text.total { font-size: 30px; fill: var(--ink-3); font-variant-numeric: tabular-nums; }
+.ann text.total tspan { fill: var(--down); font-weight: 600; }
 .ann path { stroke: var(--ink-3); stroke-width: 2.5; stroke-dasharray: 8 9; }
 .ann path.span { stroke-dasharray: none; }
-.ann circle { fill: #fff; stroke: var(--ink-2); stroke-width: 3; }
+.ann circle { fill: #000; stroke: var(--ink); stroke-width: 3; }
 .dates text { font: 500 26px var(--sans); fill: var(--ink-3); font-variant-numeric: tabular-nums; }
 .name { font: 700 120px var(--sans); letter-spacing: -0.03em; fill: var(--ink); }
 .reason text { font: 18px var(--sans); fill: var(--ink-3); }
@@ -38,58 +37,66 @@ html, body { background: #fff; overflow: hidden; }
 .quote p { margin: 0; text-wrap: pretty; }
 .quote cite { display: block; margin-top: 1.4em; font: 400 0.5em var(--sans); color: var(--ink-3); }
 
-/* gene symbols typed into a spreadsheet: it finds a month and a day in each, then keeps a date */
+/* the rule as a program; a fixed left edge, so the lines that come and go do not move the rest */
+.prog { left: 30%; top: 50%; transform: translateY(-50%); font: 3.4cqw var(--mono); display: grid; grid-template-columns: auto auto; column-gap: 0.7em; justify-content: start; }
+.ln { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: center; height: 1.7em; white-space: nowrap; }
+.ln i { font-style: normal; color: var(--ink-3); }
+.ln span { font-family: var(--sans); font-weight: 500; }
+.ln b { margin-left: 0.5em; font-weight: 500; color: var(--ink-3); }
+.ln em { margin-left: 0.8em; font: 600 1em var(--sans); font-style: normal; color: var(--down); }
+.ln .said { color: var(--pink); font-weight: 400; text-decoration: underline dashed 0.05em var(--pink-2); text-underline-offset: 0.3em; }
+.ln code { font: inherit; color: var(--pink); }
+.ln .no { color: var(--ink); }
+.ln small { margin-left: 1em; font: 400 0.5em var(--sans); color: var(--pink); opacity: 0.8; }
+.ln s { text-decoration: none; }
+.act[data-off] s { color: var(--ink-3); text-decoration: line-through 0.08em; }
+.news { position: absolute; bottom: 100%; left: 0; margin: 0 0 1em; font: 500 0.75em var(--sans); color: var(--ink); white-space: nowrap; }
+.news em { font-style: normal; color: var(--ink-3); margin-right: 0.6em; font-variant-numeric: tabular-nums; }
+
+/* gene symbols typed into a spreadsheet (out of the talk for now) */
 .sheet { left: 50%; top: 50%; transform: translate(-50%, -50%); border-collapse: collapse; font: 2.3cqw var(--sans); }
 .sheet th { padding: 0.25em 0.7em; border: 1px solid var(--line); background: var(--paper); font: 400 0.55em var(--sans); color: var(--ink-3); }
 .sheet td { position: relative; width: 9em; height: 1.85em; border: 1px solid var(--line); }
 .sheet td > span { position: absolute; inset: 0 0.45em; display: flex; align-items: center; white-space: nowrap; }
-.sheet .typed b { font-weight: inherit; padding: 0 0.06em; border-radius: 0.15em; transition: background-color 200ms, color 200ms, margin 300ms var(--ease); }
 .sheet .date { justify-content: flex-end; font-variant-numeric: tabular-nums; opacity: 0; }
-/* the month and the day it finds come apart, each marked */
-.sheet[data-on] .typed b:first-child { margin-right: 0.18em; background: color-mix(in srgb, var(--slate) 16%, #fff); color: var(--slate); transition-delay: calc(700ms + var(--i) * 250ms); }
-.sheet[data-on] .typed b:last-child { background: color-mix(in srgb, var(--slate) 16%, #fff); color: var(--slate); transition-delay: calc(1050ms + var(--i) * 250ms); }
-.sheet[data-on] .typed { opacity: 0; transition: opacity 120ms calc(2300ms + var(--i) * 300ms); }
-.sheet[data-on] .date { opacity: 1; transition: opacity 120ms calc(2300ms + var(--i) * 300ms); }
+.sheet[data-on] .typed { opacity: 0; }
+.sheet[data-on] .date { opacity: 1; }
 
-/* a name on two cards, and the part one of them dropped */
+/* a name on two cards (out of the talk for now) */
 .ids { left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 3.5cqw; font-size: 1.5cqw; }
 .id { position: relative; display: grid; grid-template-columns: 28% 1fr; align-items: center; gap: 1.6cqw; box-sizing: border-box; width: 27cqw; aspect-ratio: 1.585; padding: 2.4cqw 2cqw 1.6cqw; border-radius: 1.1cqw; background: var(--paper); box-shadow: inset 0 0 0 1.5px var(--line); }
 .id small { position: absolute; left: 2cqw; top: 1.2cqw; font-size: 0.85em; color: var(--ink-3); }
 .id i { aspect-ratio: 0.8; border-radius: 0.5cqw; background: var(--line-2); }
 .id span { display: block; font-size: 0.75em; color: var(--ink-3); }
-.id b { display: block; margin-top: 0.2em; font: 600 1.6em var(--sans); letter-spacing: 0.02em; white-space: nowrap; }
-.id s { display: inline-block; text-decoration: none; }
-.ne { font: 300 3em var(--sans); color: var(--ink-3); opacity: 0; }
-.ids[data-on] s { opacity: 0; transform: translateY(1.4em) rotate(10deg); transition: transform 700ms ease-in 900ms, opacity 500ms 1100ms; }
-.ids[data-on] .ne { opacity: 1; transition: opacity 0s 1800ms; }
+.id b { display: block; margin-top: 0.2em; font: 600 1.6em var(--sans); white-space: nowrap; }
+.id s, .ne { opacity: 0; text-decoration: none; }
+.ids[data-on] .ne { opacity: 1; }
 
 /* the calendar, live, and the recording of it */
 .demo { position: fixed; inset: 0; z-index: 2; background: #fff; visibility: hidden; }
 .demo[data-on] { visibility: visible; }
-.video { inset: 0; width: 100%; height: 100%; object-fit: contain; background: #fff; }
+.video { inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000; }
 
 /* After the demo: sentence → weights → program → place, and the correction going back the other way. */
 .arch { left: 4%; right: 4%; top: 50%; transform: translateY(-58%); display: grid; grid-template-columns: 20% 4% 11% 4% 29% 4% 28%; align-items: center; font-size: 1.35cqw; }
-
 .a-sentence { height: 2.9em; padding: 0 0.85em; line-height: 2.9em; border-radius: 0.65em; background: var(--paper); box-shadow: inset 0 0 0 1px var(--line); font-size: 1.15em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .a-arrow { position: relative; height: 1.5px; margin: 0 0.7em; background: var(--ink-3); }
 .a-arrow::after { content: ''; position: absolute; right: 0; top: 50%; width: 0.45em; height: 0.45em; border: solid var(--ink-3); border-width: 1.5px 1.5px 0 0; transform: translateY(-50%) rotate(45deg); }
 .a-weights { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.35em; aspect-ratio: 1; border-radius: 0.9em; box-shadow: inset 0 0 0 1.5px var(--pink-2); text-align: center; }
 .a-weights span { font: 500 1em var(--mono); color: var(--pink); }
 .a-weights small { font-size: 0.68em; color: var(--ink-3); font-variant-numeric: tabular-nums; }
-.a-weights .a-moved { color: var(--pink-ink); opacity: 0; transition: opacity 400ms; }
-.arch[data-learn] .a-weights { animation: lit 1.4s var(--ease) 1.9s; }
-.arch[data-learn] .a-moved { opacity: 1; transition-delay: 2s; }
-@keyframes lit { 30% { background: var(--pink-wash); box-shadow: inset 0 0 0 2.5px var(--pink); } }
+.a-weights .a-moved { color: var(--pink-ink); visibility: hidden; }
+.arch[data-learn] .a-weights { background: var(--pink-wash); box-shadow: inset 0 0 0 2px var(--pink); }
+.arch[data-learn] .a-moved { visibility: visible; }
 
 .a-program { display: grid; gap: 0.35em; }
 .a-line { display: grid; grid-template-columns: 3.6em 1.2em 1fr; align-items: baseline; font: 1em/1.5 var(--mono); }
 .a-line span, .a-line i { font-style: normal; color: var(--ink-3); }
 .a-line code { font: inherit; color: var(--ink); }
-.a-line del { text-decoration: line-through 0.08em transparent; transition: color 400ms 900ms, text-decoration-color 400ms 900ms; white-space: nowrap; }
+.a-line del { text-decoration: none; white-space: nowrap; }
 .a-line ins { display: none; text-decoration: none; white-space: nowrap; color: var(--pink-ink); background: var(--pink-wash); border-radius: 0.2em; padding: 0 0.2em; }
-.arch[data-learn] .a-line del { color: var(--ink-3); text-decoration-color: var(--ink-3); }
-.arch[data-learn] .a-line ins { display: inline-block; margin-left: 0.5em; animation: arrive 500ms var(--ease) 1.2s both; }
+.arch[data-learn] .a-line del { color: var(--ink-3); text-decoration: line-through 0.08em; }
+.arch[data-learn] .a-line ins { display: inline-block; margin-left: 0.5em; }
 
 .a-week { font-size: 0.85em; }
 .a-days { display: grid; grid-template-columns: repeat(var(--days), 1fr); margin-bottom: 0.4em; color: var(--ink-3); font-size: 0.85em; }
@@ -97,15 +104,11 @@ html, body { background: #fff; overflow: hidden; }
 .a-days [data-today] { color: var(--ink); font-weight: 600; }
 .a-grid { position: relative; height: min(calc(var(--hours) * 3.4em), 24em); border-radius: 0.4em; box-shadow: inset 0 0 0 1px var(--line);
   background: linear-gradient(90deg, var(--line-2) 1px, transparent 1px) 0 0 / calc(100% / var(--days)) 100%, linear-gradient(var(--line-2) 1px, transparent 1px) 0 0 / 100% calc(100% / var(--hours)); }
-.a-block { position: absolute; box-sizing: border-box; padding: 0.25em 0.5em; border: 2px solid #fff; border-radius: 0.5em; overflow: hidden; background: var(--pink-wash); color: var(--pink-ink); box-shadow: inset 0 0 0 1px var(--pink-2); display: flex; flex-direction: column; font-size: 0.85em; line-height: 1.25;
-  transition: left 800ms var(--spring), top 800ms var(--spring), height 500ms var(--ease), background-color 300ms, color 300ms; }
+.a-block { position: absolute; box-sizing: border-box; padding: 0.25em 0.5em; border: 2px solid #000; border-radius: 0.5em; overflow: hidden; background: var(--pink-wash); color: var(--pink-ink); box-shadow: inset 0 0 0 1px var(--pink-2); display: flex; flex-direction: column; font-size: 0.85em; line-height: 1.25; }
 .a-block b { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .arch[data-learn] .a-block { background: var(--pink); color: #fff; box-shadow: none; }
 
-.a-back { grid-column: 1 / -1; width: 100%; margin-top: 0.6em; overflow: visible; }
-.a-back path { fill: none; stroke: var(--pink); stroke-width: 2; stroke-dasharray: 1 1; stroke-dashoffset: 1; opacity: 0; }
-.a-back marker path { fill: var(--pink); stroke: none; stroke-dasharray: none; stroke-dashoffset: 0; opacity: 1; }
-.arch[data-learn] .a-back > path { opacity: 1; stroke-dashoffset: 0; }
-.arch[data-learn] .a-back > path:nth-of-type(1) { transition: stroke-dashoffset 700ms var(--ease-in-out) 500ms, opacity 0s 500ms; }
-.arch[data-learn] .a-back > path:nth-of-type(2) { transition: stroke-dashoffset 700ms var(--ease-in-out) 1.3s, opacity 0s 1.3s; }
-.extra:not([data-on]) > * { display: none; } /* takes no width until it is shown, so the ticks sit by the rule */
+.a-back { grid-column: 1 / -1; width: 100%; margin-top: 0.6em; overflow: visible; visibility: hidden; }
+.a-back path { fill: none; stroke: var(--pink); stroke-width: 2; }
+.a-back marker path { fill: var(--pink); stroke: none; }
+.arch[data-learn] .a-back { visibility: visible; }
