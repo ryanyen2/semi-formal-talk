@@ -101,7 +101,7 @@ const HIGH = day('2026-09-04') // 230.36, the last high before; closed above it 
 
 // The largest falls before 11/8, with what the news tied them to: the whole chip sector, not Nvidia alone.
 // 10/22 AI spending and borrowing costs; 10/30 Intel's Q4 guidance (Intel −29%); 11/5 chip stocks (Nasdaq −5.5%, AMD and Micron −17%).
-const FALLS: [number, string][] = [[day('2026-10-22'), 'AI 泡沫疑慮'], [day('2026-10-30'), 'Intel 財測差'], [day('2026-11-05'), '晶片股崩跌']]
+const FALLS: [number, string][] = [[day('2026-10-22'), 'AI 泡沫疑慮'], [day('2026-10-30'), 'Intel 財測差']]
 
 function Chart({ beat }: { beat: number }) {
   const name = BEATS[beat], on = (b: Beat) => beat >= at(b)
@@ -126,7 +126,7 @@ function Chart({ beat }: { beat: number }) {
       {shown && on('drop1') && !on('drop2') && <circle className="down late" cx={X(D1)} cy={Y(close(D1))} r={9} />}
       {on('why1') && <g className="ann">
         {FALLS.map(([i, why], k) => {
-          const lx = X(FALLS[2][0]) - (2 - k) * 190 // a row of labels ending under the last fall
+          const lx = X(FALLS[FALLS.length - 1][0]) - (FALLS.length - 1 - k) * 190 // a row of labels ending under the last fall
           return <g key={i}>
             <path d={`M${lx} 616L${X(i)} ${Y(close(i)) + 16}`} />
             <circle cx={X(i)} cy={Y(close(i))} r={8} />
