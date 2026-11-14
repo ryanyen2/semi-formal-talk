@@ -12,5 +12,5 @@ npm install
 npm run dev
 ```
 
-The stock prices are NVIDIA's daily closes from Yahoo Finance. The meme on beat 7 is by HADISY AI ACADEMY; beat 11 quotes the New York Times (Chinese edition) of 2026-10-30. Beat 14 is a recording of the calendar, for when the live one fails.
+The stock prices are NVIDIA's daily closes from Yahoo Finance. The meme on beat 7 is by HADISY AI ACADEMY; beat 10 quotes the New York Times (Chinese edition) of 2026-10-30. Beat 14 is a recording of the calendar, for when the live one fails.
 The code is copied from a research repository by `talk/export.sh`.

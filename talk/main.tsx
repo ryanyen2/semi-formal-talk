@@ -18,7 +18,7 @@ const video = new URL('./demo.mp4', import.meta.url).href
 const report = new URL('./report.png', import.meta.url).href
 
 // 'gene' and 'rmv' (Sheet and Ids below) are out of the talk for now; put them back in this list to show them.
-const BEATS = ['blank', 'rise', 'trend', 'drop1', 'why1', 'drop2', 'name', 'meme', 'question', 'ran', 'quote', 'report', 'semi', 'demo', 'video', 'read', 'learn'] as const
+const BEATS = ['blank', 'rise', 'trend', 'drop1', 'why1', 'drop2', 'name', 'meme', 'question', 'ran', 'report', 'quote', 'semi', 'demo', 'video', 'read', 'learn'] as const
 type Beat = (typeof BEATS)[number]
 const at = (b: Beat) => BEATS.indexOf(b)
 const DEMO = at('demo')
@@ -57,7 +57,7 @@ function Talk() {
     <>
       <div className="talk" data-beat={name}>
         <Chart beat={beat} />
-        <p className="question" data-on={name === 'question' || undefined}>為什麼他出軌，<span>綠</span>的是我們？</p>
+        <p className="question" data-on={name === 'question' || undefined}>為什麼出軌的是他，<span>綠</span>的是我們？</p>
         <Program name={name} />
         <blockquote className="quote" data-on={name === 'quote' || undefined}>
           <p>“It is invariably the case that a program, once in operation, will be felt to be only part of the answer to the problems at hand.”</p>
