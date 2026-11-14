@@ -51,11 +51,10 @@ html, body { background: #000; overflow: hidden; }
 .ln em { margin-left: 1em; font: 600 1em var(--sans); font-style: normal; color: var(--down); }
 .ln .said { color: var(--pink); font-family: var(--sans); text-decoration: underline dashed 0.05em var(--pink-2); text-underline-offset: 0.3em; }
 
-/* the report of 10/29 */
-.report { inset: 0; margin: auto; width: 82%; height: fit-content; display: flex; flex-direction: column; align-items: flex-end; gap: 0.8cqw; }
-.report img { width: 100%; }
-.report figcaption { font: 0.95cqw var(--sans); color: var(--ink-3); }
-.pasted { right: 3%; bottom: 5%; width: 38%; }
+/* the report of 10/29, pasted beside the program */
+.pasted { right: 3%; bottom: 3%; width: 38%; margin: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 0.6cqw; }
+.pasted img { width: 100%; }
+.pasted figcaption { font: 0.95cqw var(--sans); color: var(--ink-3); }
 
 /* gene symbols typed into a spreadsheet (out of the talk for now) */
 .sheet { left: 50%; top: 50%; transform: translate(-50%, -50%); border-collapse: collapse; font: 2.3cqw var(--sans); }

@@ -18,7 +18,7 @@ const video = new URL('./demo.mp4', import.meta.url).href
 const report = new URL('./report.png', import.meta.url).href
 
 // 'gene' and 'rmv' (Sheet and Ids below) are out of the talk for now; put them back in this list to show them.
-const BEATS = ['blank', 'rise', 'trend', 'drop1', 'why1', 'drop2', 'name', 'meme', 'question', 'ran', 'report', 'quote', 'semi', 'pasted', 'demo', 'video', 'read', 'learn'] as const
+const BEATS = ['blank', 'rise', 'trend', 'drop1', 'why1', 'drop2', 'name', 'meme', 'question', 'ran', 'quote', 'semi', 'pasted', 'demo', 'video', 'read', 'learn'] as const
 type Beat = (typeof BEATS)[number]
 const at = (b: Beat) => BEATS.indexOf(b)
 const DEMO = at('demo')
@@ -63,12 +63,11 @@ function Talk() {
           <p>“It is invariably the case that a program, once in operation, will be felt to be only part of the answer to the problems at hand.”</p>
           <cite>Peter Naur, 1985</cite>
         </blockquote>
-        <figure className="report" data-on={name === 'report' || undefined}>
+        {/* the report of 10/29, pasted beside the program like the meme on the chart */}
+        <figure className="pasted" data-on={name === 'pasted' || undefined}>
           <img src={report} alt="" />
           <figcaption>紐約時報中文網，2026/10/30（英文版 10/29）</figcaption>
         </figure>
-        {/* the report again, pasted beside the program like the meme on the chart */}
-        <img className="pasted" src={report} alt="" data-on={name === 'pasted' || undefined} />
         <Video on={name === 'video'} />
         <Architecture beat={beat} lesson={lesson} />
       </div>
