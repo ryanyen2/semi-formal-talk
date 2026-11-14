@@ -1,0 +1,29 @@
+/* Tokens. Pink is what the model reads or learns; blue-gray is everything else. */
+:root {
+  --paper: #f7f7f9;
+  --surface: #ffffff;
+  --ink: #232a36;
+  --ink-2: #566074;
+  --ink-3: #8b94a6;
+  --line: #e4e7ed;
+  --line-2: #eef0f4;
+  --pink: #e2557f;
+  --pink-2: #f3a4bd;
+  --pink-wash: #fdeef3;
+  --pink-ink: #b5375f; /* pink as text on a pink wash */
+  --slate: #6f7f97;
+  --slate-wash: #eef1f6;
+  /* the one gradient: pink to blue-gray */
+  --blend: linear-gradient(90deg, #e2557f, #b88fb0 50%, #6f7f97);
+  --blend-loop: linear-gradient(90deg, #e2557f, #b88fb0 25%, #6f7f97 50%, #b88fb0 75%, #e2557f); /* the same blend, there and back, so it can travel */
+  --sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Helvetica Neue', sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --spring: cubic-bezier(0.3, 1.5, 0.6, 1); /* a short overshoot: a block settling on a snap */
+  --radius: 10px;
+}
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }

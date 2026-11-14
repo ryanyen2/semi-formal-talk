@@ -1,0 +1,100 @@
+/* The inspector. Pink is what was read or learned; blue-gray is everything else. */
+.inspector {
+  display: flex; flex-direction: column; gap: 14px;
+  height: 100%; padding: 16px; overflow-y: auto;
+  font: 11px/1.5 var(--mono); color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+/* the panel scrolls; its parts keep their height */
+.inspector > * { flex-shrink: 0; }
+
+.insp-reveal { margin: 0; font: 12.5px/1.6 var(--mono); color: var(--ink); white-space: pre-line; }
+.insp-reveal b { font-weight: inherit; color: var(--pink); }
+.insp-reveal span { color: var(--ink-3); }
+.inspector[data-ready='false'] .insp-reveal { color: var(--ink-3); }
+.inspector[data-ready='false'] .insp-reveal b { color: inherit; }
+
+/* The sentence: tokens, the values of each part, and what each token gives each value */
+.insp-token { padding: 1px 5px; border-radius: 4px; color: var(--ink-3); outline: none; transition: box-shadow 120ms ease; }
+.insp-token[data-role='title'] { color: var(--ink); background: var(--slate-wash); }
+.insp-token[data-role='date'], .insp-token[data-role='time'] { color: var(--pink); background: var(--pink-wash); }
+.insp-token[tabindex] { cursor: default; }
+.insp-token[tabindex]:hover, .insp-token:focus-visible { box-shadow: 0 0 0 1px var(--ink); }
+
+.flow { position: relative; width: 348px; transition: height 280ms var(--ease); }
+.flow-ribbons { position: absolute; inset: 0; overflow: visible; }
+.flow-ribbons path { fill: var(--slate); fill-opacity: 0.28; transition: fill-opacity 160ms ease; }
+.flow-ribbons path[data-kind='read'] { fill: var(--pink); fill-opacity: 0.45; }
+.flow-ribbons path[data-lit='true'] { fill-opacity: 0.7; }
+.flow-ribbons path[data-lit='false'] { fill-opacity: 0.06; }
+.flow-token { position: absolute; height: 22px; display: flex; align-items: center; max-width: 92px; box-sizing: border-box; font-size: 12px; line-height: 20px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.flow-part { position: absolute; height: 18px; line-height: 18px; font-size: 10px; color: var(--ink-3); }
+.flow-value { position: absolute; width: 152px; height: 20px; display: grid; grid-template-columns: 52px 1fr 32px; align-items: center; gap: 6px; outline: none; color: var(--ink-3); }
+.flow-value[data-top] { color: var(--ink); }
+.flow-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.flow-p { text-align: right; }
+.flow-bar { position: relative; height: 4px; border-radius: 2px; background: var(--line-2); }
+.flow-bar i { position: absolute; inset: 0; border-radius: 2px; background: var(--line); transform-origin: left; }
+.flow-value[data-top] .flow-bar i { background: var(--pink-2); }
+.flow-value:hover .flow-bar i, .flow-value:focus-visible .flow-bar i { background: var(--pink); }
+/* where the value was before the solve */
+.flow-bar b { position: absolute; top: -3px; bottom: -3px; width: 1.5px; margin-left: -0.75px; background: var(--ink-3); }
+.insp-how { min-height: 17px; color: var(--ink-3); }
+
+/* The probes: the sentence with one thing changed, and the other events, each on a day's track */
+.probes { display: grid; gap: 7px; }
+.probe { display: grid; grid-template-columns: 1fr auto; column-gap: 8px; row-gap: 3px; color: var(--ink-3); transition: color 200ms ease; }
+.probe[data-moved] { color: var(--ink); }
+.probe-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.probe-text b { font-weight: inherit; color: var(--pink-ink); }
+.probe-day { text-align: right; }
+.probe-day s { margin-right: 6px; color: var(--ink-3); }
+.probe-day span { display: inline-block; min-width: 76px; margin-left: 8px; text-align: right; }
+.probe[data-moved] .probe-day { color: var(--pink-ink); }
+.probe-track { grid-column: 1 / -1; position: relative; height: 6px; border-radius: 3px;
+  background: repeating-linear-gradient(90deg, var(--line-2) 0 calc(25% - 1px), var(--line) calc(25% - 1px) 25%); }
+.probe-track i { position: absolute; top: 0; bottom: 0; border-radius: 3px; transition: left 280ms var(--ease), width 280ms var(--ease), opacity 200ms ease; }
+.probe-now { background: var(--slate); }
+.probe[data-moved] .probe-now { background: var(--pink); }
+.probe-was { box-shadow: inset 0 0 0 1px var(--ink-3); }
+
+/* The latest solve, step by step */
+.scrub-row { display: flex; align-items: center; gap: 8px; height: 18px; }
+.scrub-play { display: grid; place-items: center; width: 18px; height: 18px; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--ink-3); cursor: pointer; }
+.scrub-play:hover { color: var(--pink); }
+.scrub-play svg { width: 10px; height: 10px; fill: currentColor; }
+.scrub-track { position: relative; flex: 1; height: 18px; margin: 0 5px; cursor: pointer; outline: none; touch-action: none; }
+.scrub-track::before { content: ''; position: absolute; left: 0; right: 0; top: 8px; height: 2px; border-radius: 1px; background: var(--line); }
+.scrub-fill { position: absolute; left: 0; top: 8px; height: 2px; border-radius: 1px; background: var(--pink-2); transition: width 300ms linear; }
+.scrub-track i { position: absolute; top: 5px; width: 2px; height: 8px; margin-left: -1px; border-radius: 1px; background: var(--ink-3); }
+.scrub-track i[data-held] { background: var(--pink); }
+.scrub-track i[data-before] { background: var(--line); }
+.scrub-track b { position: absolute; top: 4px; width: 10px; height: 10px; margin-left: -5px; border-radius: 50%; background: var(--surface); box-shadow: 0 0 0 1.5px var(--pink); transition: left 200ms var(--ease); }
+.scrub-track:focus-visible b { box-shadow: 0 0 0 1.5px var(--pink), 0 0 0 4px var(--pink-wash); }
+
+/* The field: one square per weight */
+.insp-field { min-height: 120px; }
+.insp-label { display: flex; justify-content: space-between; font-size: 10px; line-height: 16px; color: var(--ink-3); }
+.insp-stage { position: relative; color: var(--ink); }
+.insp-stage { transition: height 280ms var(--ease); }
+.insp-stage canvas { position: absolute; left: 0; top: 0; width: 100%; image-rendering: pixelated; }
+.insp-lift { height: 100%; pointer-events: none; }
+/* The file dims while a solve plays, so the weights that leave it are what is seen; it comes back part way after. */
+.insp-base { transition: opacity 200ms ease; }
+.insp-field[data-dim] .insp-base { opacity: 0.55; transition: opacity 400ms ease 900ms; }
+.insp-field[data-dim='deep'] .insp-base { opacity: 0.2; transition: opacity 200ms ease; }
+.insp-mark { opacity: 0; pointer-events: none; transition: opacity 160ms ease; }
+.insp-field[data-linked='true'] .insp-base { opacity: 0.28; }
+.insp-field[data-linked='true'] .insp-mark { opacity: 1; }
+.insp-label-rest { position: absolute; left: 0; right: 0; transform: translateY(-100%); }
+
+.insp-count { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+.insp-count b { font-weight: 500; color: var(--ink); }
+.insp-count b[data-any='true'] { color: var(--pink); }
+.insp-scale { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--ink-3); }
+/* the legend of the field's pink scale, same two ends as the canvas */
+.insp-scale i { width: 36px; height: 4px; border-radius: 2px; background: linear-gradient(90deg, var(--pink-2), var(--pink)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .flow, .insp-base, .insp-mark, .insp-token, .probe, .probe-track i, .scrub-fill, .scrub-track b { transition: none; }
+}

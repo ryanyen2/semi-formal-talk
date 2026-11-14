@@ -1,0 +1,160 @@
+/* The page: a bar with the sentence, the week, and the inspector's panel. */
+.app { display: flex; height: 100%; background: var(--surface); overflow: hidden; }
+.stage { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.panel { width: 0; flex: none; overflow: hidden; background: var(--paper); transition: width 420ms var(--ease); }
+.panel[data-open] { width: 380px; }
+/* fixed width, so the inspector slides in whole rather than being squeezed */
+.panel-body { width: 380px; height: 100%; overflow-y: auto; border-left: 1px solid var(--line); }
+
+.bar { display: grid; grid-template-columns: 1fr minmax(280px, 520px) 1fr; align-items: center; gap: 24px; padding: 18px 24px 14px; }
+.bar-when { display: flex; align-items: center; gap: 2px; white-space: nowrap; }
+.bar-when h1 { margin: 0 12px 0 0; font-size: 19px; font-weight: 650; letter-spacing: -0.015em; }
+.bar-when h1 span { font-weight: 400; color: var(--ink-3); }
+.bar-when button { height: 28px; min-width: 28px; padding: 0 8px; border-radius: 7px; font-size: 13px; color: var(--ink-2); transition: background-color 150ms, transform 120ms var(--ease); }
+.bar-when button:hover { background: var(--slate-wash); }
+.bar-when button:active { transform: scale(0.96); }
+.bar-when svg, .cal-away svg { width: 8px; height: 12px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; vertical-align: -1px; }
+
+.bar-sentence { position: relative; }
+/* the one line the page says: what a solve took a new word to mean; it shows once, at the end of the emptied input, and goes */
+.learned { position: absolute; z-index: 6; top: 0; right: 16px; font: 12px/46px var(--mono); color: var(--pink-ink); white-space: pre; pointer-events: none; opacity: 0; animation: said 2.9s ease; }
+@keyframes said { 0% { opacity: 0; transform: translateY(-3px); } 8%, 86% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+.code { justify-self: end; font: 12px/1 var(--mono); color: var(--ink-3); padding: 8px 10px; border-radius: 7px; white-space: nowrap; transition: background-color 150ms, color 200ms, transform 120ms var(--ease); }
+.code:hover, .code[aria-expanded='true'] { color: var(--ink); background: var(--slate-wash); }
+.code:active { transform: scale(0.98); }
+.code i { font-style: normal; opacity: 0.55; }
+.code b { font-weight: 500; color: var(--pink); }
+.code span { color: var(--slate); }
+
+/* The sentence: the marks lie under a transparent input with the same metrics. */
+.composer { position: relative; height: 46px; border-radius: 12px; background: var(--paper); box-shadow: inset 0 0 0 1px var(--line); font-size: 18px; letter-spacing: -0.01em; overflow: hidden; transition: background-color 200ms, box-shadow 200ms; }
+.composer:focus-within { background: var(--surface); box-shadow: inset 0 0 0 1px var(--pink-2), 0 0 0 4px var(--pink-wash); }
+.composer input, .composer-marks { position: absolute; inset: 0; width: 100%; margin: 0; padding: 0 16px; border: 0; font: inherit; letter-spacing: inherit; line-height: 46px; white-space: pre; }
+.composer-marks { overflow: hidden; color: var(--ink); }
+.composer-marks span { transition: color 260ms ease, text-decoration-color 260ms ease; text-decoration: underline 1.5px transparent; text-underline-offset: 6px; }
+.composer-marks [data-role='none'] { color: var(--ink-3); }
+.composer-marks [data-role='date'] { color: var(--pink); text-decoration-color: var(--pink-2); }
+.composer-marks [data-role='time'] { color: var(--pink-ink); text-decoration-color: var(--pink-2); }
+.composer input { background: none; outline: 0; color: transparent; caret-color: var(--pink); }
+.composer input::placeholder { color: var(--ink-3); opacity: 0.7; }
+.composer input::selection { color: transparent; background: color-mix(in srgb, var(--pink) 18%, transparent); }
+/* until the weights are in: the blend passing along the bottom edge */
+.composer::after { content: ''; position: absolute; inset: auto 0 0; height: 2px; background: var(--blend-loop) 0 0 / 200% 100%; animation: travel 1.6s linear infinite; transition: opacity 500ms; }
+.composer[data-ready]::after { opacity: 0; animation-play-state: paused; }
+@keyframes travel { to { background-position: -200% 0; } }
+
+/* The week. Columns are sevenths of a view; what moves with the week sits on a strip that slides. */
+.cal { flex: 1; min-height: 0; display: flex; flex-direction: column; user-select: none; font-variant-numeric: tabular-nums; transition: opacity 500ms; }
+.app:not([data-ready]) .cal { opacity: 0.5; }
+.cal[data-dragging] { cursor: grabbing; }
+.cal-row { display: flex; }
+.cal-gutter { position: relative; flex: none; width: 60px; font-size: 10.5px; color: var(--ink-3); }
+.cal-view { position: relative; flex: 1; min-width: 0; overflow: hidden; }
+.cal-strip { position: absolute; inset: 0; transform: translateX(calc(var(--week) * -100%)); transition: transform 520ms var(--ease-in-out); }
+.cal-strip > * { position: absolute; top: 0; left: 0; width: calc(100% / 7); }
+.cal-columns { background: linear-gradient(90deg, var(--line-2) 1px, transparent 1px) 0 0 / calc(100% / 7) 100%; }
+
+.cal-head .cal-view { height: 34px; }
+.cal-day { padding: 0 9px; line-height: 30px; font-size: 12px; color: var(--ink-3); white-space: nowrap; }
+.cal-day b { display: inline-block; min-width: 22px; margin-left: 1px; padding: 0 5px; border-radius: 6px; line-height: 20px; text-align: center; font-weight: 600; color: var(--ink); }
+.cal-day[data-today] { color: var(--ink-2); }
+.cal-day[data-today] b { background: var(--ink); color: var(--surface); }
+
+.cal-allday { border-top: 1px solid var(--line-2); border-bottom: 1px solid var(--line); }
+.cal-allday .cal-view { height: 28px; }
+.cal-allday .cal-gutter { line-height: 28px; text-align: right; padding-right: 10px; }
+
+.cal-scroll { flex: 1; min-height: 0; overflow-y: auto; scrollbar-width: none; }
+@media (prefers-reduced-motion: no-preference) { .cal-scroll { scroll-behavior: smooth; } }
+.cal-grid { height: calc(var(--hour) * 24); }
+.cal-grid .cal-gutter span { position: absolute; right: 10px; transform: translateY(-50%); white-space: nowrap; }
+.cal-hours { background-image: linear-gradient(90deg, var(--line-2) 1px, transparent 1px), linear-gradient(var(--line-2) 1px, transparent 1px); background-size: calc(100% / 7) 100%, 100% var(--hour); }
+.cal-today { height: 100%; background: color-mix(in srgb, var(--slate-wash) 45%, transparent); pointer-events: none; }
+/* now */
+.cal-today i { position: absolute; left: 0; right: 0; height: 1px; background: var(--ink-2); }
+.cal-today i::before { content: ''; position: absolute; left: -3px; top: -3px; width: 7px; height: 7px; border-radius: 50%; background: var(--ink-2); }
+
+/* A block: an event (blue-gray) or a reading (pink, as strong as it is probable). */
+.block { height: 28px; z-index: 1; outline: 0; cursor: grab; touch-action: none; transition: transform 340ms var(--ease), height 340ms var(--ease), opacity 260ms ease; }
+@starting-style { .block { opacity: 0; } }
+.block[data-kind='ghost'] { z-index: 2; }
+.block[data-active] { z-index: 3; }
+/* each snap is one step; the block springs onto it */
+.block[data-dragging] { z-index: 4; cursor: grabbing; transition: transform 200ms var(--spring), height 200ms var(--spring), opacity 260ms ease; }
+.block-face { position: absolute; inset: 1px 3px 1px 1px; display: flex; flex-direction: column; gap: 1px; padding: 5px 7px; border-radius: 6px; overflow: hidden;
+  font-size: 12px; line-height: 15px; background: color-mix(in srgb, var(--slate) 15%, var(--surface)); color: var(--ink); opacity: var(--p);
+  transition: background-color 600ms ease, color 600ms ease, opacity 260ms ease, box-shadow 180ms ease, transform 180ms var(--ease); }
+/* a veil under a reading, so an event beneath it does not show its text through */
+.block[data-kind='ghost']::before { content: ''; position: absolute; inset: 1px 3px 1px 1px; border-radius: 6px; background: var(--surface); opacity: 0.8; }
+.block[data-kind='ghost'][data-size='day']::before { inset: 3px 3px 3px 1px; }
+@starting-style { .block-face { transform: scale(0.96); } }
+.block-title { font-weight: 550; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.block-time { font-size: 11px; color: var(--slate); white-space: nowrap; transition: color 600ms ease; }
+.block[data-size='s'] .block-face { padding-top: 3px; }
+.block[data-size='xs'] .block-face, .block[data-size='day'] .block-face { flex-direction: row; align-items: center; gap: 6px; padding-top: 0; padding-bottom: 0; }
+.block[data-size='xs'] .block-face { font-size: 10.5px; line-height: 12px; }
+.block[data-size='xs'] .block-time { font-size: 10px; }
+.block[data-dragging] .block-face { animation: none; }
+.block[data-size='day'] .block-face { inset: 3px 3px 3px 1px; }
+
+.block[data-kind='event'] .block-face { animation: kept 700ms ease backwards; }
+@keyframes kept { from { background: color-mix(in srgb, var(--pink) 16%, var(--surface)); color: var(--pink-ink); } }
+.block[data-kind='event'][data-active] .block-face { background: color-mix(in srgb, var(--slate) 26%, var(--surface)); box-shadow: inset 0 0 0 1px var(--slate); }
+.block:focus-visible .block-face { box-shadow: inset 0 0 0 1.5px var(--slate); }
+.block[data-kind='ghost'] .block-face, .block[data-learning] .block-face { background: color-mix(in srgb, var(--pink) 16%, var(--surface)); color: var(--pink-ink); }
+.block[data-kind='ghost'] .block-time, .block[data-learning] .block-time { color: var(--pink); }
+.block[data-kind='ghost'] .block-face { box-shadow: inset 0 0 0 1px var(--pink-2); }
+.block[data-kind='ghost'][data-active] .block-face { box-shadow: inset 0 0 0 1px var(--pink); }
+/* the lift while held. [data-kind] is there to outrank the active reading's own box-shadow, which hid this one */
+.block[data-dragging][data-kind] .block-face { transform: scale(1.02); box-shadow: inset 0 0 0 1px currentColor, 0 8px 20px -8px rgb(35 42 54 / 0.3); }
+/* a correction with a part the model has no way to compute: the event stays, loosely held */
+.block[data-unlearned] .block-face { outline: 1px dashed var(--ink-3); outline-offset: -1px; }
+
+/* Being learned: the blend runs along the edge, one notch per optimiser step, and fades when the solve ends. */
+.block-face::after { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px; pointer-events: none; opacity: 0;
+  background: var(--blend-loop) calc(var(--steps) * 12%) 0 / 200% 100%; transition: background-position 500ms linear, opacity 600ms ease;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
+.block[data-learning] .block-face::after { opacity: 1; }
+
+.block-action { position: absolute; top: min(4px, calc(50% - 8px)); right: 4px; width: 16px; height: 16px; border-radius: 5px; display: grid; place-items: center; color: inherit; background: color-mix(in srgb, currentColor 12%, transparent); transition: background-color 150ms, transform 120ms var(--ease); }
+.block-action:hover { background: color-mix(in srgb, currentColor 22%, transparent); }
+.block-action:active { transform: scale(0.92); }
+.block-action svg { width: 10px; height: 10px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+/* 11px tall and 3px proud of the block: a 7px edge was hard to catch on a trackpad */
+.block-grip { position: absolute; left: 0; right: 2px; height: 11px; cursor: ns-resize; }
+.block-grip[data-edge='start'] { top: -3px; }
+.block-grip[data-edge='end'] { bottom: -3px; }
+.block-grip::after { content: ''; position: absolute; left: calc(50% - 8px); top: 5px; width: 16px; height: 2px; border-radius: 1px; background: currentColor; opacity: 0; transition: opacity 150ms; }
+.block[data-kind='ghost'] .block-grip { color: var(--pink); }
+.block[data-kind='event'] .block-grip { color: var(--slate); }
+.block:hover .block-grip::after, .block[data-dragging] .block-grip::after { opacity: 0.6; }
+
+/* A reading in another week. */
+.cal-away { position: absolute; z-index: 5; height: 20px; margin-top: 2px; padding: 0 6px; display: flex; align-items: center; gap: 4px; border-radius: 6px; font-size: 11px; white-space: nowrap;
+  color: var(--pink-ink); background: color-mix(in srgb, var(--pink) 16%, var(--surface)); box-shadow: inset 0 0 0 1px var(--pink-2); opacity: var(--p); transition: top 340ms var(--ease), opacity 260ms, transform 120ms var(--ease); }
+@starting-style { .cal-away { opacity: 0; } }
+.cal-away[data-side='before'] { left: 4px; }
+.cal-away[data-side='after'] { right: 4px; flex-direction: row-reverse; }
+.cal-allday .cal-away { margin-top: 4px; }
+.cal-away:hover { opacity: 1; }
+.cal-away:active { transform: scale(0.96); }
+
+/* Narrow screens: the sentence gets its own row, a day's name sits over its number, and the
+   inspector rises over the lower part of the week, leaving the bar that closes it in reach. */
+@media (max-width: 760px) {
+  .bar { display: flex; flex-wrap: wrap; gap: 8px 12px; padding: 12px 14px 10px; }
+  .bar-sentence { order: 3; flex: 1 0 100%; }
+  .code { margin-left: auto; }
+  .cal-head .cal-view { height: 46px; }
+  .cal-day { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 2px 0 0; line-height: 16px; font-size: 11px; }
+  .app { position: relative; }
+  .panel { position: absolute; inset: auto 0 0; z-index: 5; width: auto; height: 62%; transform: translateY(100%); transition: transform 420ms var(--ease); box-shadow: 0 -1px 0 var(--line); }
+  .panel[data-open] { width: auto; transform: none; }
+  .panel-body { width: 100%; border-left: 0; }
+}
+
+/* Reduced motion: colour and opacity still change; nothing travels. */
+@media (prefers-reduced-motion: reduce) {
+  .panel, .cal-strip, .block, .block-face, .cal-away { transition-property: opacity, background-color, color, box-shadow; }
+  .composer::after { animation: none; }
+}
