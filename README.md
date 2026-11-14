@@ -5,12 +5,12 @@ event (day, start, end) with a small model that runs in the browser and learns f
 move an event to where it belongs and the model's weights change so the sentence is read that way.
 
 Keys: → / Space / PageDown next, ← / PageUp back. In the calendar's sentence the arrows move the caret
-once there is text; Esc leaves the sentence. The address keeps the beat (`#13` is the calendar).
+once there is text; Esc leaves the sentence. The address keeps the beat (`#14` is the calendar).
 
 ```bash
 npm install
 npm run dev
 ```
 
-The stock prices are NVIDIA's daily closes from Yahoo Finance. The meme on beat 7 is by HADISY AI ACADEMY; beat 10 quotes the New York Times (Chinese edition) of 2026-10-30. Beat 14 is a recording of the calendar, for when the live one fails.
+The stock prices are NVIDIA's daily closes from Yahoo Finance. The meme on beat 7 is by HADISY AI ACADEMY; beats 10 and 13 quote the New York Times (Chinese edition) of 2026-10-30. Beat 15 is a recording of the calendar, for when the live one fails.
 The code is copied from a research repository by `talk/export.sh`.

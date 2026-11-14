@@ -18,7 +18,7 @@ const video = new URL('./demo.mp4', import.meta.url).href
 const report = new URL('./report.png', import.meta.url).href
 
 // 'gene' and 'rmv' (Sheet and Ids below) are out of the talk for now; put them back in this list to show them.
-const BEATS = ['blank', 'rise', 'trend', 'drop1', 'why1', 'drop2', 'name', 'meme', 'question', 'ran', 'report', 'quote', 'semi', 'demo', 'video', 'read', 'learn'] as const
+const BEATS = ['blank', 'rise', 'trend', 'drop1', 'why1', 'drop2', 'name', 'meme', 'question', 'ran', 'report', 'quote', 'semi', 'pasted', 'demo', 'video', 'read', 'learn'] as const
 type Beat = (typeof BEATS)[number]
 const at = (b: Beat) => BEATS.indexOf(b)
 const DEMO = at('demo')
@@ -67,6 +67,8 @@ function Talk() {
           <img src={report} alt="" />
           <figcaption>紐約時報中文網，2026/10/30（英文版 10/29）</figcaption>
         </figure>
+        {/* the report again, pasted beside the program like the meme on the chart */}
+        <img className="pasted" src={report} alt="" data-on={name === 'pasted' || undefined} />
         <Video on={name === 'video'} />
         <Architecture beat={beat} lesson={lesson} />
       </div>
@@ -154,7 +156,7 @@ function Chart({ beat }: { beat: number }) {
 /* ---------- The rule as a program, then with one function whose body is a description ---------- */
 
 function Program({ name }: { name: Beat }) {
-  const ran = name === 'ran', semi = name === 'semi'
+  const ran = name === 'ran', semi = name === 'semi' || name === 'pasted'
   return (
     <div className="prog" data-on={ran || semi || undefined} data-semi={semi || undefined}>
       {semi && <>

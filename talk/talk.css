@@ -55,6 +55,7 @@ html, body { background: #000; overflow: hidden; }
 .report { inset: 0; margin: auto; width: 82%; height: fit-content; display: flex; flex-direction: column; align-items: flex-end; gap: 0.8cqw; }
 .report img { width: 100%; }
 .report figcaption { font: 0.95cqw var(--sans); color: var(--ink-3); }
+.pasted { right: 3%; bottom: 5%; width: 38%; }
 
 /* gene symbols typed into a spreadsheet (out of the talk for now) */
 .sheet { left: 50%; top: 50%; transform: translate(-50%, -50%); border-collapse: collapse; font: 2.3cqw var(--sans); }
