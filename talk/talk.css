@@ -1,5 +1,5 @@
 /* The talk: a black 16:9 stage; sizes are in hundredths of its width (cqw), so it fits any screen.
-   Nothing fades or moves: a beat is shown as it is, or not at all. The calendar (.demo) keeps its own white. */
+   Nothing fades or moves except the two falls, which draw themselves. The calendar (.demo) keeps its own white. */
 :root { --up: #ff4d5a; --down: #20c47f; } /* Taiwan's colours: red up, green down */
 html, body { background: #000; overflow: hidden; }
 
@@ -15,18 +15,21 @@ html, body { background: #000; overflow: hidden; }
 .chart path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
 .rise, .fall { stroke-width: 4.5; }
 .rise { stroke: var(--up); }
-.fall { stroke: var(--down); }
+.fall { stroke: var(--down); stroke-dasharray: 1 1; stroke-dashoffset: 1; animation: draw 1.4s cubic-bezier(0.5, 0, 0.9, 0.6) forwards; }
+.late { animation: show 0s 1.4s both; } /* the end of a fall, once it is drawn */
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes show { from { visibility: hidden; } }
 .chart circle.up { fill: var(--up); }
 .chart circle.down { fill: var(--down); }
 /* what a chart reader points at */
 .ann text { font: 500 30px var(--sans); fill: var(--ink); }
+.chart text.when { font: 500 26px var(--sans); fill: var(--ink-3); font-variant-numeric: tabular-nums; }
 .ann text.when { font-size: 26px; fill: var(--ink-3); font-variant-numeric: tabular-nums; }
-.ann text.total { font-size: 30px; fill: var(--ink-3); font-variant-numeric: tabular-nums; }
-.ann text.total tspan { fill: var(--down); font-weight: 600; }
+.chart text.total { font: 500 30px var(--sans); fill: var(--ink-3); font-variant-numeric: tabular-nums; }
+.chart text.total tspan { fill: var(--down); font-weight: 600; }
 .ann path { stroke: var(--ink-3); stroke-width: 2.5; stroke-dasharray: 8 9; }
 .ann path.span { stroke-dasharray: none; }
 .ann circle { fill: #000; stroke: var(--ink); stroke-width: 3; }
-.dates text { font: 500 26px var(--sans); fill: var(--ink-3); font-variant-numeric: tabular-nums; }
 .name { font: 700 120px var(--sans); letter-spacing: -0.03em; fill: var(--ink); }
 .reason text { font: 18px var(--sans); fill: var(--ink-3); }
 
@@ -37,21 +40,21 @@ html, body { background: #000; overflow: hidden; }
 .quote p { margin: 0; text-wrap: pretty; }
 .quote cite { display: block; margin-top: 1.4em; font: 400 0.5em var(--sans); color: var(--ink-3); }
 
-/* the rule as a program; a fixed left edge, so the lines that come and go do not move the rest */
-.prog { left: 30%; top: 50%; transform: translateY(-50%); font: 3.4cqw var(--mono); display: grid; grid-template-columns: auto auto; column-gap: 0.7em; justify-content: start; }
-.ln { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: center; height: 1.7em; white-space: nowrap; }
+/* the rule as a program, then with a function whose body is a description */
+.prog { left: 26%; top: 50%; transform: translateY(-50%); font: 3cqw var(--mono); display: grid; grid-template-columns: auto auto; column-gap: 0.8em; }
+.prog[data-semi] { font-size: 2.4cqw; }
+.ln { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: center; height: 1.65em; white-space: nowrap; }
+.ln.gap { height: 0.9em; }
 .ln i { font-style: normal; color: var(--ink-3); }
-.ln span { font-family: var(--sans); font-weight: 500; }
-.ln b { margin-left: 0.5em; font-weight: 500; color: var(--ink-3); }
-.ln em { margin-left: 0.8em; font: 600 1em var(--sans); font-style: normal; color: var(--down); }
-.ln .said { color: var(--pink); font-weight: 400; text-decoration: underline dashed 0.05em var(--pink-2); text-underline-offset: 0.3em; }
-.ln code { font: inherit; color: var(--pink); }
-.ln .no { color: var(--ink); }
-.ln small { margin-left: 1em; font: 400 0.5em var(--sans); color: var(--pink); opacity: 0.8; }
-.ln s { text-decoration: none; }
-.act[data-off] s { color: var(--ink-3); text-decoration: line-through 0.08em; }
-.news { position: absolute; bottom: 100%; left: 0; margin: 0 0 1em; font: 500 0.75em var(--sans); color: var(--ink); white-space: nowrap; }
-.news em { font-style: normal; color: var(--ink-3); margin-right: 0.6em; font-variant-numeric: tabular-nums; }
+.ln .in { padding-left: 2ch; }
+.ln b { margin-left: 0.6em; font-weight: 400; color: var(--ink-3); }
+.ln em { margin-left: 1em; font: 600 1em var(--sans); font-style: normal; color: var(--down); }
+.ln .said { color: var(--pink); font-family: var(--sans); text-decoration: underline dashed 0.05em var(--pink-2); text-underline-offset: 0.3em; }
+
+/* the report of 10/29 */
+.report { inset: 0; margin: auto; width: 82%; height: fit-content; display: flex; flex-direction: column; align-items: flex-end; gap: 0.8cqw; }
+.report img { width: 100%; }
+.report figcaption { font: 0.95cqw var(--sans); color: var(--ink-3); }
 
 /* gene symbols typed into a spreadsheet (out of the talk for now) */
 .sheet { left: 50%; top: 50%; transform: translate(-50%, -50%); border-collapse: collapse; font: 2.3cqw var(--sans); }
